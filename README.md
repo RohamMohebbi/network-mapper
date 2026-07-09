@@ -31,11 +31,14 @@ A Python tool that automatically scans your local network, discovers connected d
 
 ```
 network-mapper/
-├── app.py              # (Main backend code)
+├── app.py              # Main Flask application
 ├── templates/
-│   └── index.html      # (Frontend page)
-├── requirements.txt    # (Dependencies)
-└── README.md           # (Project documentation)
+│   └── index.html      # Frontend page with Vis.js
+├── static/
+│   └── style.css       # Custom styling
+├── requirements.txt    # Python dependencies
+├── README.md           # Project documentation
+└── network-map.png     # Screenshot preview
 ```
 
 ---
@@ -75,6 +78,12 @@ http://127.0.0.1:5000
 2. It detects active devices and collects their info (IP, hostname)
 3. Vis.js renders an interactive network graph
 4. Each device appears as a node connected to the router
+
+---
+
+## 📸 Preview
+
+![Network Map](network-map.png)
 
 ---
 
