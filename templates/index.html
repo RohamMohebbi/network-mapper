@@ -1,100 +1,248 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Network Mapper</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Mapper Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
-    <style>
-        #network {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #ccc;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 20px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>🌐 Network Map</h1>
-    <button onclick="scanNetwork()">🔍 Scan Again</button>
-    <div id="network"></div>
+    <div class="container">
+        <header>
+            <h1>🌐 Network Mapper Pro</h1>
+            <p class="subtitle">Advanced Network Topology Scanner</p>
+        </header>
+
+        <div class="controls">
+            <button onclick="scanNetwork()" id="scanBtn">🔄 Scan Network</button>
+            <span id="status" class="status-text">Ready</span>
+            <span id="scanTime" class="scan-time"></span>
+        </div>
+
+        <div class="main-content">
+            <div id="network"></div>
+            <div id="deviceDetails">
+                <h3>📋 Device Details</h3>
+                <div id="detailsContent">
+                    <p class="placeholder">Click any device to see details</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <span>🖥️ Devices: <span id="totalDevices">0</span></span>
+            <span>✅ Online: <span id="onlineDevices">0</span></span>
+            <span>🔌 Ports: <span id="totalPorts">0</span></span>
+        </div>
+
+        <footer>
+            <p>Network Mapper Pro</p>
+        </footer>
+    </div>
 
     <script>
+        let network = null;
+        let nodes = null;
+        let edges = null;
+        let currentDevices = [];
+
         function scanNetwork() {
+            const status = document.getElementById('status');
+            const scanBtn = document.getElementById('scanBtn');
+            const scanTime = document.getElementById('scanTime');
+            
+            status.textContent = '⏳ Scanning...';
+            status.className = 'status-text scanning';
+            scanBtn.disabled = true;
+            scanBtn.textContent = '⏳ Scanning...';
+
             fetch('/api/devices')
                 .then(response => response.json())
-                .then(devices => {
-                    drawGraph(devices);
+                .then(data => {
+                    if (data.success) {
+                        currentDevices = data.devices;
+                        drawGraph(data.devices);
+                        updateStats(data.devices);
+                        status.textContent = '✅ Done';
+                        status.className = 'status-text done';
+                        if (data.scan_time) {
+                            scanTime.textContent = `⏱️ ${data.scan_time}s`;
+                        }
+                    } else {
+                        status.textContent = '❌ Error';
+                        status.className = 'status-text error';
+                        alert('Scan failed: ' + data.error);
+                    }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to scan network. Make sure Nmap is installed.');
+                    status.textContent = '❌ Connection Error';
+                    status.className = 'status-text error';
+                    alert('Server not responding. Make sure app.py is running.');
+                })
+                .finally(() => {
+                    scanBtn.disabled = false;
+                    scanBtn.textContent = '🔄 Scan Again';
                 });
         }
 
         function drawGraph(devices) {
-            var nodes = new vis.DataSet();
-            var edges = new vis.DataSet();
+            nodes = new vis.DataSet();
+            edges = new vis.DataSet();
+
+            const colors = {
+                router: '#FF6B6B',
+                windows: '#0078D4',
+                linux: '#FCC624',
+                mac: '#555555',
+                unknown: '#6c5ce7',
+                mobile: '#00b894'
+            };
 
             nodes.add({
-                id: 1,
-                label: 'Router',
+                id: 'router',
+                label: '🌐 Router',
                 shape: 'box',
-                color: '#FF6B6B',
-                font: { size: 16, color: 'white' }
+                color: {
+                    background: colors.router,
+                    border: '#c0392b'
+                },
+                font: { color: 'white', size: 16 },
+                size: 35
             });
 
-            if (devices.length === 0) {
-                nodes.add({
-                    id: 2,
-                    label: 'No devices found',
-                    shape: 'dot',
-                    color: '#cccccc'
-                });
-            }
-
             devices.forEach((device, index) => {
-                var nodeId = index + 2;
-                var label = device.hostname || device.ip;
+                const nodeId = 'device_' + index;
+                const label = device.hostname !== 'Unknown' ? device.hostname : device.ip;
+                
+                let color = colors.unknown;
+                const os_lower = device.os.toLowerCase();
+                if (os_lower.find('windows') !== -1) color = colors.windows;
+                else if (os_lower.find('linux') !== -1) color = colors.linux;
+                else if (os_lower.find('apple') !== -1 || os_lower.find('mac') !== -1) color = colors.mac;
+                else if (os_lower.find('android') !== -1 || os_lower.find('ios') !== -1) color = colors.mobile;
+
+                let portBadge = '';
+                if (device.ports.length > 0) {
+                    portBadge = ' 🔌' + device.ports.length;
+                }
+
                 nodes.add({
                     id: nodeId,
-                    label: label,
-                    title: 'IP: ' + device.ip + '\nStatus: ' + device.status,
+                    label: label + portBadge,
+                    title: `IP: ${device.ip}\nOS: ${device.os}\nMAC: ${device.mac}\nVendor: ${device.vendor}\nPorts: ${device.ports.length}`,
                     shape: 'dot',
-                    size: 25,
-                    color: '#4ECDC4'
+                    color: {
+                        background: color,
+                        border: '#2d3436'
+                    },
+                    size: device.ports.length > 0 ? 30 : 25,
+                    shadow: true
                 });
 
                 edges.add({
-                    from: 1,
+                    from: 'router',
                     to: nodeId,
-                    color: '#95a5a6'
+                    color: '#636e72',
+                    width: 1,
+                    smooth: { type: 'cubicBezier' }
                 });
             });
 
-            var container = document.getElementById('network');
-            var data = { nodes: nodes, edges: edges };
-            var options = {
+            const container = document.getElementById('network');
+            const data = { nodes: nodes, edges: edges };
+            const options = {
                 layout: {
                     hierarchical: {
                         direction: 'UD',
-                        sortMethod: 'directed'
+                        sortMethod: 'directed',
+                        levelSeparation: 150
                     }
                 },
                 physics: {
                     enabled: true,
-                    stabilization: { iterations: 100 }
+                    stabilization: { iterations: 50 }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 200
+                },
+                nodes: {
+                    shape: 'dot',
+                    font: {
+                        size: 12,
+                        face: 'Segoe UI'
+                    }
                 }
             };
-            new vis.Network(container, data, options);
+            
+            network = new vis.Network(container, data, options);
+            
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    if (nodeId === 'router') {
+                        showDetails('🌐 Router', 'Main gateway device');
+                        return;
+                    }
+                    const index = parseInt(nodeId.split('_')[1]);
+                    const device = currentDevices[index];
+                    if (device) {
+                        showDeviceDetails(device);
+                    }
+                }
+            });
+        }
+
+        function showDeviceDetails(device) {
+            const container = document.getElementById('detailsContent');
+            let portsHtml = '';
+            if (device.ports.length > 0) {
+                portsHtml = '<ul class="port-list">';
+                device.ports.forEach(p => {
+                    portsHtml += `<li>🔌 Port ${p.port}: ${p.service} ${p.version !== 'N/A' ? '(' + p.version + ')' : ''}</li>`;
+                });
+                portsHtml += '</ul>';
+            } else {
+                portsHtml = '<p>No open ports detected</p>';
+            }
+
+            container.innerHTML = `
+                <div class="device-card">
+                    <h3>${device.hostname !== 'Unknown' ? device.hostname : device.ip}</h3>
+                    <div class="device-info">
+                        <p><strong>IP Address:</strong> ${device.ip}</p>
+                        <p><strong>OS:</strong> ${device.os}</p>
+                        <p><strong>MAC:</strong> ${device.mac}</p>
+                        <p><strong>Vendor:</strong> ${device.vendor}</p>
+                        <p><strong>Status:</strong> ✅ Online</p>
+                    </div>
+                    <div class="port-section">
+                        <h4>Open Ports (${device.ports.length})</h4>
+                        ${portsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showDetails(title, content) {
+            const container = document.getElementById('detailsContent');
+            container.innerHTML = `
+                <div class="device-card">
+                    <h3>${title}</h3>
+                    <p>${content}</p>
+                </div>
+            `;
+        }
+
+        function updateStats(devices) {
+            document.getElementById('totalDevices').textContent = devices.length;
+            const online = devices.filter(d => d.status === 'online').length;
+            document.getElementById('onlineDevices').textContent = online;
+            let totalPorts = 0;
+            devices.forEach(d => totalPorts += d.ports.length);
+            document.getElementById('totalPorts').textContent = totalPorts;
         }
 
         scanNetwork();
