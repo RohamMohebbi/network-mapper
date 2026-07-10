@@ -1,18 +1,20 @@
-# 🌐 Network Mapper
+# 🌐 Network Mapper Pro
 
-## 📡 Automated Network Topology Mapper
+## Advanced Network Topology Scanner with OS Detection & Port Scanning
 
-A Python tool that automatically scans your local network, discovers connected devices, and visualizes them as an interactive graph.
+A professional network mapping tool that automatically discovers devices on your network, detects operating systems, scans open ports, and visualizes everything as an interactive graph.
 
 ---
 
 ## ✨ Features
 
-- 🔍 Auto-scan network and discover active devices
-- 📊 Graphical visualization of devices as nodes connected to the router
-- 🖱️ Interactive graph with zoom, drag, and hover details
+- 🔍 Auto-scan your local network
+- 🖥️ Operating system detection
+- 🔌 Open port scanning & service detection
+- 📊 Interactive network graph visualization
+- 🎯 Click any device to see detailed info
 - ⚡ Fast and lightweight
-- 🎨 Clean and simple UI
+- 📱 Responsive design
 
 ---
 
@@ -33,7 +35,7 @@ A Python tool that automatically scans your local network, discovers connected d
 network-mapper/
 ├── app.py              # Main Flask application
 ├── templates/
-│   └── index.html      # Frontend page with Vis.js
+│   └── index.html      # Frontend page
 ├── static/
 │   └── style.css       # Custom styling
 ├── requirements.txt    # Python dependencies
@@ -46,26 +48,22 @@ network-mapper/
 ## 🚀 Installation & Usage
 
 ### 1. Clone the repository
-
 ```bash
 git clone https://github.com/RohamMohebbi/network-mapper.git
 cd network-mapper
 ```
 
 ### 2. Install dependencies
-
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. Run the application
-
 ```bash
 python app.py
 ```
 
 ### 4. Open your browser and go to:
-
 ```
 http://127.0.0.1:5000
 ```
@@ -74,10 +72,10 @@ http://127.0.0.1:5000
 
 ## 🧠 How It Works
 
-1. The app scans your local network using `python-nmap`
-2. It detects active devices and collects their info (IP, hostname)
+1. The app scans your local network using `python-nmap` with OS detection
+2. It identifies devices, operating systems, and open ports
 3. Vis.js renders an interactive network graph
-4. Each device appears as a node connected to the router
+4. Click on any device to see full details including open ports
 
 ---
 
