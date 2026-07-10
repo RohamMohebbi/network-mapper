@@ -40,7 +40,7 @@ network-mapper/
 │   └── style.css       # Custom styling
 ├── requirements.txt    # Python dependencies
 ├── README.md           # Project documentation
-└── preview.png     # Screenshot preview
+└── preview-screenshot.png     # Screenshot preview
 ```
 
 ---
@@ -81,7 +81,7 @@ http://127.0.0.1:5000
 
 ## 📸 Preview
 
-![Screenshot](preview.png)
+![preview-screenshot](preview-screenshot.png)
 
 ---
 
