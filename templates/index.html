@@ -58,7 +58,7 @@
             scanBtn.disabled = true;
             scanBtn.textContent = '⏳ Scanning...';
 
-            fetch('http://127.0.0.1:5000/api/devices')
+            fetch(window.location.origin + '/api/devices')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -118,10 +118,10 @@
                 
                 let color = colors.unknown;
                 const os_lower = device.os.toLowerCase();
-                if (os_lower.find('windows') !== -1) color = colors.windows;
-                else if (os_lower.find('linux') !== -1) color = colors.linux;
-                else if (os_lower.find('apple') !== -1 || os_lower.find('mac') !== -1) color = colors.mac;
-                else if (os_lower.find('android') !== -1 || os_lower.find('ios') !== -1) color = colors.mobile;
+                if (os_lower.includes('windows')) color = colors.windows;
+                else if (os_lower.includes('linux')) color = colors.linux;
+                else if (os_lower.includes('apple') || os_lower.includes('mac')) color = colors.mac;
+                else if (os_lower.includes('android') || os_lower.includes('ios')) color = colors.mobile;
 
                 let portBadge = '';
                 if (device.ports.length > 0) {
@@ -245,7 +245,8 @@
             document.getElementById('totalPorts').textContent = totalPorts;
         }
 
-        scanNetwork();
+        // Auto-scan disabled - user must click the button
+        // scanNetwork();
     </script>
 </body>
 </html>
