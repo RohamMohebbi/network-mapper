@@ -58,7 +58,7 @@
             scanBtn.disabled = true;
             scanBtn.textContent = '⏳ Scanning...';
 
-            fetch('/api/devices')
+            fetch('http://127.0.0.1:5000/api/devices')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
