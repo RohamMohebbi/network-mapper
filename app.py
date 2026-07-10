@@ -1,7 +1,6 @@
 from flask import Flask, render_template, jsonify
 import nmap
 import socket
-import re
 import time
 from collections import defaultdict
 
@@ -17,7 +16,6 @@ def scan_network():
     nm = nmap.PortScanner()
     subnet = get_network_info()
     
-    # aggressive but quick scan
     nm.scan(hosts=subnet, arguments='-O -sV -T4 -F --version-light')
     
     devices = []
@@ -42,7 +40,6 @@ def scan_network():
                 if 'ipv4' in nm[host]['addresses']:
                     device['ip'] = nm[host]['addresses']['ipv4']
             
-            # vendor lookup from mac
             if device['mac'] != 'N/A':
                 vendor_file = '/usr/share/nmap/nmap-mac-prefixes'
                 try:
